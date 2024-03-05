@@ -24,9 +24,9 @@
                     <label>Allure en min/km</label>
                 </div>
                 <div class="col-2 themed-grid-col">
-                        <input type="number" size="1" min="0" max="59" id="minutes" name="minutes" value="{{ minutes }}"/>
+                        <input type="number" size="2" min="0" max="59" id="minutes" name="minutes" value="{{ minutes }}"/>
                         <label>min</label>
-                        <input type="number" size="1" min="0" max="59" id="seconds" name="seconds" value="{{ seconds }}"/>
+                        <input type="number" size="3" min="0" max="59" id="seconds" name="seconds" value="{{ seconds }}"/>
                         <label>sec/km</label>
                 </div>  
                 <div class="col-2 themed-grid-col d-grid gap-2"> 
@@ -89,7 +89,5 @@
     {% endblock %}
 
     {% block scripts %}
-    <!-- Latest compiled and minified JavaScript -->
-    <!-- <script src="js/bootstrap.min.js"></script> -->
     {% endblock %}
 </body>
