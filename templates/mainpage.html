@@ -1,0 +1,95 @@
+<head>
+    {% block head %}
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/custom-grid.css">
+    {% endblock %}
+</head>
+    
+<body>
+    {% block content %}
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h1>
+                    Convertisseur d'allure et prédicteur de temps
+                </h1>
+            </div>
+        </div>
+
+        <form method="post">
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-2 themed-grid-col">
+                    <label>Allure en min/km</label>
+                </div>
+                <div class="col-2 themed-grid-col">
+                        <input type="number" size="1" min="0" max="59" id="minutes" name="minutes" value="{{ minutes }}"/>
+                        <label>min</label>
+                        <input type="number" size="1" min="0" max="59" id="seconds" name="seconds" value="{{ seconds }}"/>
+                        <label>sec/km</label>
+                </div>  
+                <div class="col-2 themed-grid-col d-grid gap-2"> 
+                    <button type="submit" class="btn btn-primary" value="Convert into km/h" id="converttokmperh" name="converttokmperh" value="converttokmperh">Convertir en km/h</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-2 themed-grid-col">
+                    <label>Allure en km/h</label>
+                </div>
+                <div class="col-2 themed-grid-col">
+                        <input type="text" size="2" id="kmperhour" name="kmperhour" value="{{ pace }}"/>
+                        <label>km/h</label>
+                </div>  
+                <div class="col-2 themed-grid-col d-grid gap-2">
+                    <button type="submit" class="btn btn-primary" id="converttominperkm" name="converttominperkm" value="converttominperkm">Convertir en min/km</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Distance</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>5K</td>
+                            <td>{{ fivek }}</td>
+                        </tr>
+                        <tr>
+                            <td>10K</td>
+                            <td>{{ tenk }}</td>
+                         </tr>
+                        <tr>
+                            <td>20K</td>
+                            <td>{{ twentyk }}</td>
+                        </tr>
+                        <tr>
+                            <td>Semi marathon</td>
+                            <td>{{ half }}</td>
+                        </tr>
+                        <tr>
+                            <td>Marathon</td>
+                            <td>{{ marathon }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+    {% endblock %}
+
+    {% block scripts %}
+    <!-- Latest compiled and minified JavaScript -->
+    <!-- <script src="js/bootstrap.min.js"></script> -->
+    {% endblock %}
+</body>
