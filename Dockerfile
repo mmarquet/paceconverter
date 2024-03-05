@@ -1,0 +1,16 @@
+# Run with docker run -d -p 5000:5000 <image_name>
+FROM python:3.13 AS build-env
+
+COPY . /app
+WORKDIR /app
+
+RUN pip install --target=./ --no-cache-dir -r requirements.txt
+#----
+FROM gcr.io/distroless/python3-debian11
+
+COPY --from=build-env /app /app
+WORKDIR /app
+
+EXPOSE 5000
+
+CMD ["app.py"]
