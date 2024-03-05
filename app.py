@@ -15,6 +15,7 @@ from flask import send_from_directory
 from decimal import Decimal
 
 import datetime
+import html
 import os
 
 app = Flask(__name__)
@@ -24,11 +25,11 @@ def hello():
     if request.method == 'POST':
         print(request.form)
         if 'converttokmperh' in request.form:
-            minutes = request.form['minutes']
-            seconds = request.form['seconds']
+            minutes = html.escape(request.form['minutes'])
+            seconds = html.escape(request.form['seconds'])
             pace = "{:.2f}".format(minkmtokmperhour(int(minutes), int(seconds)))
         elif 'converttominperkm' in request.form:
-            pace = request.form['kmperhour']
+            pace = html.escape(request.form['kmperhour'])
             minutes, seconds = kmperhourtominkm(float(pace))
         fivek, tenk, twentyk, half, marathon, o = racecalculator(int(minutes), int(seconds))
         return render_template('mainpage.html', minutes=minutes, seconds=seconds, pace=pace, fivek=fivek, tenk=tenk, twentyk=twentyk, half=half, marathon=marathon, o=o)
