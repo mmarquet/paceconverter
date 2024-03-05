@@ -1,13 +1,3 @@
-# min/km => km/h
-# 10 minutes par km => 6 km/h
-# 5 minutes par km => 60/5 => 12 km/h
-# 5'30 par km => 60/5.5 => 10.909090909 km/h
-
-# 60(min + s/60)
-# 6 km/h => 1 km en 10 minutes
-# 7 km/h => 1 km en 60/7 = 8.571428571428571 soit 8 minutes et 
-
-
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -45,12 +35,18 @@ def send_css(path):
     return send_from_directory('css', path)
 
 def minkmtokmperhour(minutes, seconds):
-    pace = 60 / (minutes + seconds / 60)
+    if minutes == 0 and seconds == 0:
+        pace = 0
+    else:
+        pace = 60 / (minutes + seconds / 60)
     return pace
 
 def kmperhourtominkm(pace):
-    minutes = int(60 // pace)
-    seconds = int(float(Decimal(str(60 / pace)) % 1) * 60)
+    if pace == 0:
+        minutes, seconds = 0, 0
+    else:
+        minutes = int(60 // pace)
+        seconds = int(float(Decimal(str(60 / pace)) % 1) * 60)
     return minutes, seconds
 
 def racecalculator(minutes, seconds, other=0):
