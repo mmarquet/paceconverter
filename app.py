@@ -19,8 +19,12 @@ def hello():
             seconds = html.escape(request.form['seconds'])
             pace = "{:.2f}".format(minkmtokmperhour(int(minutes), int(seconds)))
         elif 'converttominperkm' in request.form:
-            pace = html.escape(request.form['kmperhour'])
-            minutes, seconds = kmperhourtominkm(float(pace))
+            try:
+                pace = html.escape(request.form['kmperhour'])
+                minutes, seconds = kmperhourtominkm(float(pace))
+            except:
+                pace = 0
+                minutes, seconds = 0, 0
         fivek, tenk, twentyk, half, marathon, o = racecalculator(int(minutes), int(seconds))
         return render_template('mainpage.html', minutes=minutes, seconds=seconds, pace=pace, fivek=fivek, tenk=tenk, twentyk=twentyk, half=half, marathon=marathon, o=o)
     else:
@@ -42,7 +46,7 @@ def minkmtokmperhour(minutes, seconds):
     return pace
 
 def kmperhourtominkm(pace):
-    if pace == 0:
+    if pace <= 0:
         minutes, seconds = 0, 0
     else:
         minutes = int(60 // pace)
