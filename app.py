@@ -392,9 +392,22 @@ def send_css(path):
     logger.debug(f"Serving CSS file: {path}")
     return send_from_directory('css', path)
 
+# Production WSGI configuration
+def create_app():
+    """Factory function for creating the Flask app (useful for testing and deployment)."""
+    return app
+
+# Development server (only used when running directly)
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     debug_mode = os.environ.get("DEBUG", "false").lower() == "true"
 
-    logger.info(f"Starting Flask app on port {port}, debug={debug_mode}")
-    app.run(debug=debug_mode, host='0.0.0.0', port=port)
+    if debug_mode:
+        logger.info(f"Starting Flask development server on port {port}")
+        app.run(debug=True, host='0.0.0.0', port=port)
+    else:
+        logger.warning("Running with Flask development server in production mode. Use Gunicorn for production.")
+        app.run(debug=False, host='0.0.0.0', port=port)
+
+# WSGI entry point for production servers like Gunicorn
+application = app
