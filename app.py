@@ -16,11 +16,14 @@ app = Flask(__name__)
 
 # Constants for better maintainability and performance
 RACE_DISTANCES = {
+    'onek': 1.0,
+    'threek': 3.0,
     'fivek': 5.0,
     'tenk': 10.0,
     'twentyk': 20.0,
     'half': 21.0975,
-    'marathon': 42.195
+    'marathon': 42.195,
+    'hundredk': 100.0
 }
 
 class PaceConverter:
@@ -212,8 +215,8 @@ def index():
         logger.info("GET request to index page")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
-                             fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0,
+                             onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, hundredk=0, o=0,
                              race_distance='', race_hours=0,
                              race_minutes=0, race_seconds=0)
 
@@ -231,8 +234,8 @@ def index():
             logger.warning("Unknown form action in POST request")
             return render_template('mainpage.html',
                                  minutes=0, seconds=0, pace=0,
-                                 fivek=0, tenk=0, twentyk=0,
-                                 half=0, marathon=0, o=0,
+                                 onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                                 half=0, marathon=0, hundredk=0, o=0,
                                  race_distance='', race_hours=0,
                                  race_minutes=0, race_seconds=0)
 
@@ -240,8 +243,8 @@ def index():
         logger.error(f"Unexpected error in index route: {e}")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
-                             fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0,
+                             onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, hundredk=0, o=0,
                              race_distance='', race_hours=0,
                              race_minutes=0, race_seconds=0,
                              error="An unexpected error occurred")
@@ -257,8 +260,8 @@ def _handle_pace_to_speed_conversion():
         logger.warning(f"Invalid pace input: {error_msg}")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
-                             fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0,
+                             onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, hundredk=0, o=0,
                              error=error_msg)
 
     minutes, seconds = pace_data
@@ -282,11 +285,12 @@ def _handle_pace_to_speed_conversion():
 
     return render_template('mainpage.html',
                          minutes=minutes, seconds=seconds, pace=f"{speed:.2f}",
+                         onek=race_times['onek'], threek=race_times['threek'],
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
-                         marathon=race_times['marathon'], o=race_times['custom'],
-                         race_distance=selected_distance, race_hours=race_hours,
-                         race_minutes=race_mins, race_seconds=race_secs)
+                         marathon=race_times['marathon'], hundredk=race_times['hundredk'],
+                         o=race_times['custom'], race_distance=selected_distance,
+                         race_hours=race_hours, race_minutes=race_mins, race_seconds=race_secs)
 
 def _handle_speed_to_pace_conversion():
     """Handle conversion from speed (km/h) to pace (min/km)."""
@@ -298,8 +302,8 @@ def _handle_speed_to_pace_conversion():
         logger.warning(f"Invalid speed input: {error_msg}")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
-                             fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0,
+                             onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, hundredk=0, o=0,
                              error=error_msg)
 
     minutes, seconds = PaceConverter.km_per_hour_to_minutes_per_km(speed)
@@ -322,11 +326,12 @@ def _handle_speed_to_pace_conversion():
 
     return render_template('mainpage.html',
                          minutes=minutes, seconds=seconds, pace=speed_str,
+                         onek=race_times['onek'], threek=race_times['threek'],
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
-                         marathon=race_times['marathon'], o=race_times['custom'],
-                         race_distance=selected_distance, race_hours=race_hours,
-                         race_minutes=race_mins, race_seconds=race_secs)
+                         marathon=race_times['marathon'], hundredk=race_times['hundredk'],
+                         o=race_times['custom'], race_distance=selected_distance,
+                         race_hours=race_hours, race_minutes=race_mins, race_seconds=race_secs)
 
 def _handle_race_time_conversion():
     """Handle conversion from race time to pace and other race times."""
@@ -341,8 +346,8 @@ def _handle_race_time_conversion():
         logger.warning(f"Invalid race distance: {race_distance}")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
-                             fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0,
+                             onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, hundredk=0, o=0,
                              race_distance='', race_hours=0,
                              race_minutes=0, race_seconds=0,
                              error="Please select a valid race distance")
@@ -353,8 +358,8 @@ def _handle_race_time_conversion():
         logger.warning(f"Invalid race time input: {error_msg}")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
-                             fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0,
+                             onek=0, threek=0, fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, hundredk=0, o=0,
                              race_distance='', race_hours=0,
                              race_minutes=0, race_seconds=0,
                              error=error_msg)
@@ -368,11 +373,12 @@ def _handle_race_time_conversion():
 
     return render_template('mainpage.html',
                          minutes=pace_minutes, seconds=pace_seconds, pace=f"{speed:.2f}",
+                         onek=race_times['onek'], threek=race_times['threek'],
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
-                         marathon=race_times['marathon'], o=race_times['custom'],
-                         race_distance=race_distance, race_hours=hours,
-                         race_minutes=minutes_race, race_seconds=seconds_race)
+                         marathon=race_times['marathon'], hundredk=race_times['hundredk'],
+                         o=race_times['custom'], race_distance=race_distance,
+                         race_hours=hours, race_minutes=minutes_race, race_seconds=seconds_race)
 
 @app.route('/js/<path:path>')
 def send_js(path):

@@ -14,102 +14,158 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1>🏃‍♂️ Pace Converter</h1>
-            <p>Calculate your running pace and predict race times with precision</p>
+            <h1>Pace Converter</h1>
         </header>
 
         <!-- Error Message -->
         {% if error %}
         <div class="error-message">
-            ⚠️ {{ error }}
+            {{ error }}
         </div>
         {% endif %}
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Pace Converter Card -->
-            <div class="card">
+            <!-- Interactive Pace Converter -->
+            <div class="card converter-card">
                 <h2 class="card-title">
                     <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    Pace Conversion
+                    Interactive Pace Calculator
                 </h2>
 
-                <form method="post">
-                    <!-- Pace to Speed Section -->
-                    <div class="form-section">
-                        <div class="form-group">
-                            <label for="pace-inputs">Pace (min/km)</label>
-                            <div class="form-row">
-                                <div class="input-group">
-                                    <input type="number" id="minutes" name="minutes" value="{{ minutes if minutes > 0 else '' }}" min="0" max="59" placeholder="0">
-                                    <span class="unit-label">min</span>
-                                    <input type="number" id="seconds" name="seconds" value="{{ seconds if seconds > 0 else '' }}" min="0" max="59" placeholder="0">
-                                    <span class="unit-label">sec</span>
-                                </div>
-                                <button type="submit" class="btn" name="converttokmperh" value="converttokmperh">
-                                    Convert to km/h
-                                </button>
+                <!-- Mode Selector -->
+                <div class="mode-selector">
+                    <button type="button" class="mode-btn active" data-mode="pace">
+                        <span class="mode-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </span>
+                        <span class="mode-text">Pace → Speed</span>
+                    </button>
+                    <button type="button" class="mode-btn" data-mode="speed">
+                        <span class="mode-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </span>
+                        <span class="mode-text">Speed → Pace</span>
+                    </button>
+                    <button type="button" class="mode-btn" data-mode="race">
+                        <span class="mode-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </span>
+                        <span class="mode-text">Race Time</span>
+                    </button>
+                </div>
+
+                <!-- Dynamic Input Container -->
+                <div class="input-container">
+                    <!-- Pace Mode -->
+                    <div class="input-mode active" id="pace-mode">
+                        <div class="input-row">
+                            <div class="input-field">
+                                <label>Minutes per km</label>
+                                <input type="number" id="minutes" min="0" max="20" placeholder="0">
                             </div>
+                            <div class="input-separator">:</div>
+                            <div class="input-field">
+                                <label>Seconds per km</label>
+                                <input type="number" id="seconds" min="0" max="59" placeholder="00">
+                            </div>
+                        </div>
+                        <div class="result-display">
+                            <div class="result-value" id="speed-result">0.0</div>
+                            <div class="result-unit">km/h</div>
                         </div>
                     </div>
 
-                    <!-- Speed to Pace Section -->
-                    <div class="form-section">
-                        <div class="form-group">
-                            <label for="speed-input">Speed (km/h)</label>
-                            <div class="form-row">
-                                <div class="input-group">
-                                    <input type="text" id="kmperhour" name="kmperhour" value="{{ pace if pace != '0' else '' }}" placeholder="0.0">
-                                    <span class="unit-label">km/h</span>
-                                </div>
-                                <button type="submit" class="btn" name="converttominperkm" value="converttominperkm">
-                                    Convert to min/km
-                                </button>
+                    <!-- Speed Mode -->
+                    <div class="input-mode" id="speed-mode">
+                        <div class="input-row">
+                            <div class="input-field wide">
+                                <label>Speed (km/h)</label>
+                                <input type="number" id="speed" step="0.1" min="0" max="100" placeholder="0.0">
                             </div>
+                        </div>
+                        <div class="result-display">
+                            <div class="result-value" id="pace-result">0:00</div>
+                            <div class="result-unit">min/km</div>
                         </div>
                     </div>
 
-                    <!-- Race Time Section -->
-                    <div class="form-section">
-                        <div class="form-group">
-                            <label for="race-inputs">Race Time</label>
-                            <div class="form-row">
-                                <div class="race-inputs">
-                                    <div class="input-group">
-                                        <select name="race_distance" id="race_distance">
-                                            <option value="fivek" {% if race_distance == 'fivek' %}selected{% endif %}>5K</option>
-                                            <option value="tenk" {% if race_distance == 'tenk' %}selected{% endif %}>10K</option>
-                                            <option value="twentyk" {% if race_distance == 'twentyk' %}selected{% endif %}>20K</option>
-                                            <option value="half" {% if race_distance == 'half' %}selected{% endif %}>Half Marathon</option>
-                                            <option value="marathon" {% if race_distance == 'marathon' %}selected{% endif %}>Marathon</option>
-                                        </select>
-                                    </div>
-                                    <div class="input-group">
-                                        <input type="number" name="race_hours" value="{{ race_hours if race_hours > 0 else '' }}" min="0" max="12" placeholder="0">
-                                        <span class="unit-label">h</span>
-                                        <input type="number" name="race_minutes" value="{{ race_minutes if race_minutes > 0 else '' }}" min="0" max="59" placeholder="0">
-                                        <span class="unit-label">min</span>
-                                        <input type="number" name="race_seconds" value="{{ race_seconds if race_seconds > 0 else '' }}" min="0" max="59" placeholder="0">
-                                        <span class="unit-label">sec</span>
-                                    </div>
+                    <!-- Race Mode -->
+                    <div class="input-mode" id="race-mode">
+                        <div class="input-row">
+                            <div class="input-field">
+                                <label>Distance</label>
+                                <select id="race-distance">
+                                    <option value="onek">1K</option>
+                                    <option value="threek">3K</option>
+                                    <option value="fivek">5K</option>
+                                    <option value="tenk">10K</option>
+                                    <option value="twentyk">20K</option>
+                                    <option value="half">Half Marathon</option>
+                                    <option value="marathon">Marathon</option>
+                                    <option value="hundredk">100K</option>
+                                </select>
+                            </div>
+                            <div class="time-inputs">
+                                <div class="input-field small">
+                                    <label>Hours</label>
+                                    <input type="number" id="race-hours" min="0" max="99" placeholder="0">
                                 </div>
-                                <button type="submit" class="btn" name="convertfromracetime" value="convertfromracetime">
-                                    Calculate Pace
-                                </button>
+                                <div class="input-separator">:</div>
+                                <div class="input-field small">
+                                    <label>Minutes</label>
+                                    <input type="number" id="race-minutes" min="0" max="59" placeholder="00">
+                                </div>
+                                <div class="input-separator">:</div>
+                                <div class="input-field small">
+                                    <label>Seconds</label>
+                                    <input type="number" id="race-seconds" min="0" max="59" placeholder="00">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="result-display">
+                            <div class="result-row">
+                                <div class="result-item-inline">
+                                    <div class="result-value" id="race-pace-result">0:00</div>
+                                    <div class="result-unit">min/km</div>
+                                </div>
+                                <div class="result-item-inline">
+                                    <div class="result-value" id="race-speed-result">0.0</div>
+                                    <div class="result-unit">km/h</div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
+
+
+                <!-- Hidden Form for Server Submission -->
+                <form method="post" id="hidden-form" style="display: none;">
+                    <input type="hidden" name="minutes" id="form-minutes">
+                    <input type="hidden" name="seconds" id="form-seconds">
+                    <input type="hidden" name="kmperhour" id="form-speed">
+                    <input type="hidden" name="race_distance" id="form-race-distance">
+                    <input type="hidden" name="race_hours" id="form-race-hours">
+                    <input type="hidden" name="race_minutes" id="form-race-minutes">
+                    <input type="hidden" name="race_seconds" id="form-race-seconds">
+                    <input type="hidden" name="converttokmperh" id="form-pace-submit">
+                    <input type="hidden" name="converttominperkm" id="form-speed-submit">
+                    <input type="hidden" name="convertfromracetime" id="form-race-submit">
                 </form>
             </div>
-
         </main>
 
         <!-- Results Section -->
-        {% if fivek and fivek != '0h0min0s' %}
-        <section class="results-section">
-            <div class="card">
+        <section class="results-section" id="results-section" style="display: none;">
+            <div class="card results-card">
                 <h2 class="card-title">
                     <svg class="card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -117,52 +173,42 @@
                     Race Time Predictions
                 </h2>
 
-                <div class="results-table">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>
-                                    <svg style="width: 16px; height: 16px; display: inline; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    Distance
-                                </th>
-                                <th>
-                                    <svg style="width: 16px; height: 16px; display: inline; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Predicted Time
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>5 kilometers</strong></td>
-                                <td><code>{{ fivek }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>10 kilometers</strong></td>
-                                <td><code>{{ tenk }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>20 kilometers</strong></td>
-                                <td><code>{{ twentyk }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Half Marathon (21.1 km)</strong></td>
-                                <td><code>{{ half }}</code></td>
-                            </tr>
-                            <tr>
-                                <td><strong>Marathon (42.2 km)</strong></td>
-                                <td><code>{{ marathon }}</code></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="results-grid">
+                    <div class="result-item">
+                        <div class="result-distance">1K</div>
+                        <div class="result-time" id="result-onek">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">3K</div>
+                        <div class="result-time" id="result-threek">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">5K</div>
+                        <div class="result-time" id="result-fivek">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">10K</div>
+                        <div class="result-time" id="result-tenk">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">20K</div>
+                        <div class="result-time" id="result-twentyk">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">Half Marathon</div>
+                        <div class="result-time" id="result-half">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">Marathon</div>
+                        <div class="result-time" id="result-marathon">0h0min0s</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-distance">100K</div>
+                        <div class="result-time" id="result-hundredk">0h0min0s</div>
+                    </div>
                 </div>
             </div>
         </section>
-        {% endif %}
 
         <!-- Footer -->
         <footer class="footer">
@@ -172,81 +218,334 @@
     <script>
         // Race distances in kilometers
         const raceDistances = {
+            'onek': 1.0,
+            'threek': 3.0,
             'fivek': 5.0,
             'tenk': 10.0,
             'twentyk': 20.0,
             'half': 21.0975,
-            'marathon': 42.195
+            'marathon': 42.195,
+            'hundredk': 100.0
         };
 
-        // Add smooth form interactions
+        let currentMode = 'pace';
+
         document.addEventListener('DOMContentLoaded', function() {
-            const inputs = document.querySelectorAll('input, select');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    this.parentElement.style.transform = 'scale(1.02)';
+            // Animation utility functions
+            function animateResult(element, newValue) {
+                if (element.textContent === newValue) return;
+
+                element.style.transform = 'scale(0.8)';
+                element.style.opacity = '0.5';
+
+                setTimeout(() => {
+                    element.textContent = newValue;
+                    element.style.transform = 'scale(1.1)';
+                    element.style.opacity = '1';
+
+                    setTimeout(() => {
+                        element.style.transform = 'scale(1)';
+                    }, 150);
+                }, 100);
+            }
+
+            function addInputFocusEffects() {
+                const inputs = document.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    input.addEventListener('focus', function() {
+                        this.parentElement.style.transform = 'translateY(-2px)';
+                        this.parentElement.style.transition = 'transform 0.2s ease';
+                    });
+
+                    input.addEventListener('blur', function() {
+                        this.parentElement.style.transform = 'translateY(0)';
+                    });
                 });
-                input.addEventListener('blur', function() {
-                    this.parentElement.style.transform = 'scale(1)';
+            }
+
+            function validateAndClampInput(input, min, max) {
+                let value = parseFloat(input.value);
+
+                if (isNaN(value) || value < min) {
+                    value = min;
+                } else if (value > max) {
+                    value = max;
+                }
+
+                // Update the input value if it was clamped
+                if (parseFloat(input.value) !== value) {
+                    input.value = value;
+                    // Add visual feedback for clamping
+                    input.style.borderColor = '#f59e0b';
+                    input.style.boxShadow = '0 0 0 3px rgba(245, 158, 11, 0.1)';
+
+                    setTimeout(() => {
+                        input.style.borderColor = '';
+                        input.style.boxShadow = '';
+                    }, 1000);
+                }
+
+                return value;
+            }
+
+            function addInputValidation() {
+                // Minutes validation (0-20)
+                minutesInput?.addEventListener('blur', function() {
+                    validateAndClampInput(this, 0, 20);
                 });
-            });
 
-            // Add loading state to buttons
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(button => {
-                button.addEventListener('click', function() {
-                    this.style.opacity = '0.8';
-                    this.innerHTML = 'Calculating...';
+                // Seconds validation (0-59)
+                secondsInput?.addEventListener('blur', function() {
+                    validateAndClampInput(this, 0, 59);
                 });
-            });
 
-            // Handle race distance change
-            const raceDistanceSelect = document.getElementById('race_distance');
-            const minutesInput = document.getElementById('minutes');
-            const secondsInput = document.getElementById('seconds');
-            const raceHoursInput = document.querySelector('input[name="race_hours"]');
-            const raceMinutesInput = document.querySelector('input[name="race_minutes"]');
-            const raceSecondsInput = document.querySelector('input[name="race_seconds"]');
+                // Speed validation (0-100)
+                speedInput?.addEventListener('blur', function() {
+                    validateAndClampInput(this, 0, 100);
+                });
 
-            function updateRaceTime() {
-                const selectedDistance = raceDistanceSelect.value;
-                const minutes = parseInt(minutesInput.value) || 0;
-                const seconds = parseInt(secondsInput.value) || 0;
+                // Race hours validation (0-99) - use blur to not interfere with spinner arrows
+                raceHoursInput?.addEventListener('blur', function() {
+                    validateAndClampInput(this, 0, 99);
+                });
 
-                // If pace is cleared or zero, clear race time fields
-                if ((minutesInput.value === '' && secondsInput.value === '') || (minutes === 0 && seconds === 0)) {
-                    raceHoursInput.value = '';
-                    raceMinutesInput.value = '';
-                    raceSecondsInput.value = '';
+                // Race minutes validation (0-59)
+                raceMinutesInput?.addEventListener('blur', function() {
+                    validateAndClampInput(this, 0, 59);
+                });
+
+                // Race seconds validation (0-59)
+                raceSecondsInput?.addEventListener('blur', function() {
+                    validateAndClampInput(this, 0, 59);
+                });
+            }
+
+            function formatTime(totalSeconds) {
+                const hours = Math.floor(totalSeconds / 3600);
+                const remainingSeconds = totalSeconds % 3600;
+                const minutes = Math.floor(remainingSeconds / 60);
+                const seconds = Math.floor(remainingSeconds % 60);
+                return `${hours}h${minutes}min${seconds}s`;
+            }
+
+            function calculateAllRaceTimes(paceMinutes, paceSeconds) {
+                if (paceMinutes === 0 && paceSeconds === 0) {
+                    return null;
+                }
+
+                const totalSecondsPerKm = paceMinutes * 60 + paceSeconds;
+                const results = {};
+
+                for (const [raceKey, distance] of Object.entries(raceDistances)) {
+                    const raceTotalSeconds = totalSecondsPerKm * distance;
+                    results[raceKey] = formatTime(raceTotalSeconds);
+                }
+
+                return results;
+            }
+
+            function updateRaceTimeDisplay(raceTimes) {
+                if (!raceTimes) {
+                    hideResults();
                     return;
                 }
 
-                // Calculate if we have a valid pace
-                if (minutes > 0 || seconds > 0) {
-                    const distanceKm = raceDistances[selectedDistance];
-                    if (distanceKm) {
-                        const totalRaceSeconds = (minutes * 60 + seconds) * distanceKm;
-                        const hours = Math.floor(totalRaceSeconds / 3600);
-                        const mins = Math.floor((totalRaceSeconds % 3600) / 60);
-                        const secs = Math.floor(totalRaceSeconds % 60);
-
-                        raceHoursInput.value = hours > 0 ? hours : '';
-                        raceMinutesInput.value = mins > 0 ? mins : '';
-                        raceSecondsInput.value = secs > 0 ? secs : '';
+                // Update each result with animation
+                Object.entries(raceTimes).forEach(([raceKey, time]) => {
+                    const element = document.getElementById(`result-${raceKey}`);
+                    if (element) {
+                        animateResult(element, time);
                     }
+                });
+
+                showResults();
+            }
+
+            function showResults() {
+                if (resultsSection.style.display === 'none') {
+                    resultsSection.style.display = 'block';
+                    resultsSection.style.opacity = '0';
+                    resultsSection.style.transform = 'translateY(20px)';
+
+                    setTimeout(() => {
+                        resultsSection.style.transition = 'all 0.6s ease-out';
+                        resultsSection.style.opacity = '1';
+                        resultsSection.style.transform = 'translateY(0)';
+                    }, 50);
                 }
             }
 
-            // Update race time when distance changes
-            if (raceDistanceSelect) {
-                raceDistanceSelect.addEventListener('change', updateRaceTime);
+            function hideResults() {
+                if (resultsSection.style.display !== 'none') {
+                    resultsSection.style.transition = 'all 0.3s ease-out';
+                    resultsSection.style.opacity = '0';
+                    resultsSection.style.transform = 'translateY(-20px)';
+
+                    setTimeout(() => {
+                        resultsSection.style.display = 'none';
+                    }, 300);
+                }
             }
 
-            // Also update when pace changes
-            if (minutesInput && secondsInput) {
-                minutesInput.addEventListener('input', updateRaceTime);
-                secondsInput.addEventListener('input', updateRaceTime);
+            function clearResults() {
+                Object.keys(raceDistances).forEach(raceKey => {
+                    const element = document.getElementById(`result-${raceKey}`);
+                    if (element) {
+                        element.textContent = '0h0min0s';
+                    }
+                });
+                hideResults();
             }
+
+            // Mode switching
+            const modeButtons = document.querySelectorAll('.mode-btn');
+            const inputModes = document.querySelectorAll('.input-mode');
+            const resultsSection = document.getElementById('results-section');
+
+            modeButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const mode = this.dataset.mode;
+                    switchMode(mode);
+                });
+            });
+
+            function switchMode(mode) {
+                currentMode = mode;
+
+                // Update buttons with animation
+                modeButtons.forEach(btn => {
+                    const wasActive = btn.classList.contains('active');
+                    const isActive = btn.dataset.mode === mode;
+
+                    if (isActive && !wasActive) {
+                        btn.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            btn.style.transform = '';
+                        }, 150);
+                    }
+
+                    btn.classList.toggle('active', isActive);
+                });
+
+                // Update input modes with staggered animation
+                inputModes.forEach((inputMode, index) => {
+                    const isActive = inputMode.id === `${mode}-mode`;
+                    if (isActive) {
+                        inputMode.style.animationDelay = `${index * 50}ms`;
+                        inputMode.classList.add('active');
+                        setTimeout(() => inputMode.classList.add('visible'), 50);
+                    } else {
+                        inputMode.classList.remove('visible');
+                        setTimeout(() => inputMode.classList.remove('active'), 200);
+                    }
+                });
+
+                // Don't clear results when switching modes - let them persist
+            }
+
+            // Real-time calculations
+            const minutesInput = document.getElementById('minutes');
+            const secondsInput = document.getElementById('seconds');
+            const speedInput = document.getElementById('speed');
+            const raceHoursInput = document.getElementById('race-hours');
+            const raceMinutesInput = document.getElementById('race-minutes');
+            const raceSecondsInput = document.getElementById('race-seconds');
+            const raceDistanceSelect = document.getElementById('race-distance');
+
+            // Pace mode calculations
+            [minutesInput, secondsInput].forEach(input => {
+                input?.addEventListener('input', updateSpeedResult);
+            });
+
+            function updateSpeedResult() {
+                const minutes = Math.max(0, Math.min(20, parseInt(minutesInput.value) || 0));
+                const seconds = Math.max(0, Math.min(59, parseInt(secondsInput.value) || 0));
+                const resultElement = document.getElementById('speed-result');
+
+                if (minutes === 0 && seconds === 0) {
+                    animateResult(resultElement, '0.0');
+                    // Don't hide race times, just don't update them with new values
+                    return;
+                }
+
+                const totalMinutes = minutes + seconds / 60;
+                const speed = 60 / totalMinutes;
+                animateResult(resultElement, speed.toFixed(1));
+
+                // Calculate and display race times
+                const raceTimes = calculateAllRaceTimes(minutes, seconds);
+                updateRaceTimeDisplay(raceTimes);
+            }
+
+            // Speed mode calculations
+            speedInput?.addEventListener('input', updatePaceResult);
+
+            function updatePaceResult() {
+                const speed = Math.max(0, Math.min(100, parseFloat(speedInput.value) || 0));
+                const resultElement = document.getElementById('pace-result');
+
+                if (speed <= 0) {
+                    animateResult(resultElement, '0:00');
+                    // Don't hide race times, just don't update them with new values
+                    return;
+                }
+
+                const totalMinutes = 60 / speed;
+                const minutes = Math.floor(totalMinutes);
+                const seconds = Math.floor((totalMinutes - minutes) * 60);
+                animateResult(resultElement, `${minutes}:${seconds.toString().padStart(2, '0')}`);
+
+                // Calculate and display race times
+                const raceTimes = calculateAllRaceTimes(minutes, seconds);
+                updateRaceTimeDisplay(raceTimes);
+            }
+
+            // Race mode calculations
+            [raceHoursInput, raceMinutesInput, raceSecondsInput, raceDistanceSelect].forEach(input => {
+                input?.addEventListener('input', updateRacePaceResult);
+                input?.addEventListener('change', updateRacePaceResult);
+            });
+
+            function updateRacePaceResult() {
+                const hours = Math.max(0, Math.min(99, parseInt(raceHoursInput.value) || 0));
+                const minutes = Math.max(0, Math.min(59, parseInt(raceMinutesInput.value) || 0));
+                const seconds = Math.max(0, Math.min(59, parseInt(raceSecondsInput.value) || 0));
+                const distance = raceDistanceSelect.value;
+                const paceResultElement = document.getElementById('race-pace-result');
+                const speedResultElement = document.getElementById('race-speed-result');
+
+                if (hours === 0 && minutes === 0 && seconds === 0) {
+                    animateResult(paceResultElement, '0:00');
+                    animateResult(speedResultElement, '0.0');
+                    // Don't hide race times, just don't update them with new values
+                    return;
+                }
+
+                const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+                const distanceKm = raceDistances[distance];
+                const paceSecondsPerKm = totalSeconds / distanceKm;
+                const paceMinutes = Math.floor(paceSecondsPerKm / 60);
+                const paceSecondsRemainder = Math.floor(paceSecondsPerKm % 60);
+
+                // Update pace display
+                animateResult(paceResultElement, `${paceMinutes}:${paceSecondsRemainder.toString().padStart(2, '0')}`);
+
+                // Calculate and update speed display
+                const totalPaceMinutes = paceMinutes + paceSecondsRemainder / 60;
+                const speed = totalPaceMinutes > 0 ? 60 / totalPaceMinutes : 0;
+                animateResult(speedResultElement, speed.toFixed(1));
+
+                // Calculate and display race times
+                const raceTimes = calculateAllRaceTimes(paceMinutes, paceSecondsRemainder);
+                updateRaceTimeDisplay(raceTimes);
+            }
+
+            // Initialize focus effects and validation
+            addInputFocusEffects();
+            addInputValidation();
+
+            // Initial calculation
+            updateSpeedResult();
         });
     </script>
 </body>
