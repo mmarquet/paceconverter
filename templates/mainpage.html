@@ -28,8 +28,8 @@
                         <label>min</label>
                         <input type="number" size="3" min="0" max="59" id="seconds" name="seconds" value="{{ seconds }}"/>
                         <label>sec/km</label>
-                </div>  
-                <div class="col-2 themed-grid-col d-grid gap-2"> 
+                </div>
+                <div class="col-2 themed-grid-col d-grid gap-2">
                     <button type="submit" class="btn btn-primary" value="Convert into km/h" id="converttokmperh" name="converttokmperh" value="converttokmperh">Convertir en km/h</button>
                 </div>
             </div>
@@ -41,9 +41,30 @@
                 <div class="col-2 themed-grid-col">
                         <input type="text" size="2" id="kmperhour" name="kmperhour" value="{{ pace }}"/>
                         <label>km/h</label>
-                </div>  
+                </div>
                 <div class="col-2 themed-grid-col d-grid gap-2">
                     <button type="submit" class="btn btn-primary" id="converttominperkm" name="converttominperkm" value="converttominperkm">Convertir en min/km</button>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-3"></div>
+                <div class="col-2 themed-grid-col">
+                    <label>Temps de course</label>
+                </div>
+                <div class="col-2 themed-grid-col">
+                    <select name="race_distance" id="race_distance">
+                        <option value="fivek" {% if race_distance == 'fivek' %}selected{% endif %}>5K</option>
+                        <option value="tenk" {% if race_distance == 'tenk' %}selected{% endif %}>10K</option>
+                        <option value="twentyk" {% if race_distance == 'twentyk' %}selected{% endif %}>20K</option>
+                        <option value="half" {% if race_distance == 'half' %}selected{% endif %}>Semi</option>
+                        <option value="marathon" {% if race_distance == 'marathon' %}selected{% endif %}>Marathon</option>
+                    </select>
+                    <input type="number" size="1" min="0" max="12" name="race_hours" value="{{ race_hours if race_hours > 0 else '' }}" placeholder="0"/>h
+                    <input type="number" size="2" min="0" max="59" name="race_minutes" value="{{ race_minutes if race_minutes > 0 else '' }}" placeholder="0"/>min
+                    <input type="number" size="2" min="0" max="59" name="race_seconds" value="{{ race_seconds if race_seconds > 0 else '' }}" placeholder="0"/>s
+                </div>
+                <div class="col-2 themed-grid-col d-grid gap-2">
+                    <button type="submit" class="btn btn-primary" id="convertfromracetime" name="convertfromracetime" value="convertfromracetime">Calculer allures</button>
                 </div>
             </div>
         </form>

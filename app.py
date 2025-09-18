@@ -73,6 +73,24 @@ class PaceConverter:
 
         return results
 
+    @staticmethod
+    def race_time_to_pace(race_distance: str, hours: int, minutes: int, seconds: int) -> Tuple[int, int]:
+        """Convert race time to pace per km."""
+        if race_distance not in RACE_DISTANCES:
+            return 0, 0
+
+        distance_km = RACE_DISTANCES[race_distance]
+        total_race_seconds = hours * 3600 + minutes * 60 + seconds
+
+        if total_race_seconds <= 0 or distance_km <= 0:
+            return 0, 0
+
+        seconds_per_km = total_race_seconds / distance_km
+        pace_minutes = int(seconds_per_km // 60)
+        pace_seconds = int(seconds_per_km % 60)
+
+        return pace_minutes, pace_seconds
+
 class InputValidator:
     """Input validation utilities."""
 
@@ -111,6 +129,28 @@ class InputValidator:
         except (ValueError, TypeError, InvalidOperation):
             return False, None, "Invalid input: please enter a valid number"
 
+    @staticmethod
+    def validate_race_time_input(hours_str: str, minutes_str: str, seconds_str: str) -> Tuple[bool, Optional[Tuple[int, int, int]], str]:
+        """Validate and convert race time input."""
+        try:
+            hours = int(hours_str or "0")
+            minutes = int(minutes_str or "0")
+            seconds = int(seconds_str or "0")
+
+            if hours < 0 or minutes < 0 or seconds < 0:
+                return False, None, "Time values must be non-negative"
+            if minutes >= 60 or seconds >= 60:
+                return False, None, "Minutes and seconds must be less than 60"
+            if hours > 12:
+                return False, None, "Race time seems unreasonably long (>12 hours)"
+            if hours == 0 and minutes == 0 and seconds == 0:
+                return False, None, "Please enter a valid race time"
+
+            return True, (hours, minutes, seconds), ""
+
+        except (ValueError, TypeError):
+            return False, None, "Invalid input: please enter valid numbers"
+
 @app.route("/", methods=['GET', 'POST'])
 def index():
     """Main route handling pace conversions."""
@@ -120,7 +160,9 @@ def index():
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
                              fivek=0, tenk=0, twentyk=0,
-                             half=0, marathon=0, o=0)
+                             half=0, marathon=0, o=0,
+                             race_distance='', race_hours=0,
+                             race_minutes=0, race_seconds=0)
 
     # POST request handling
     logger.info(f"POST request with form data: {dict(request.form)}")
@@ -130,6 +172,8 @@ def index():
             return _handle_pace_to_speed_conversion()
         elif 'converttominperkm' in request.form:
             return _handle_speed_to_pace_conversion()
+        elif 'convertfromracetime' in request.form:
+            return _handle_race_time_conversion()
         else:
             logger.warning("Unknown form action in POST request")
             return render_template('mainpage.html',
@@ -170,7 +214,9 @@ def _handle_pace_to_speed_conversion():
                          minutes=minutes, seconds=seconds, pace=f"{speed:.2f}",
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
-                         marathon=race_times['marathon'], o=race_times['custom'])
+                         marathon=race_times['marathon'], o=race_times['custom'],
+                         race_distance='', race_hours=0,
+                         race_minutes=0, race_seconds=0)
 
 def _handle_speed_to_pace_conversion():
     """Handle conversion from speed (km/h) to pace (min/km)."""
@@ -195,7 +241,49 @@ def _handle_speed_to_pace_conversion():
                          minutes=minutes, seconds=seconds, pace=speed_str,
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
-                         marathon=race_times['marathon'], o=race_times['custom'])
+                         marathon=race_times['marathon'], o=race_times['custom'],
+                         race_distance='', race_hours=0,
+                         race_minutes=0, race_seconds=0)
+
+def _handle_race_time_conversion():
+    """Handle conversion from race time to pace and other race times."""
+    race_distance = request.form.get('race_distance', '')
+    hours_str = request.form.get('race_hours', '0')
+    minutes_str = request.form.get('race_minutes', '0')
+    seconds_str = request.form.get('race_seconds', '0')
+
+    if race_distance not in RACE_DISTANCES:
+        logger.warning(f"Invalid race distance: {race_distance}")
+        return render_template('mainpage.html',
+                             minutes=0, seconds=0, pace=0,
+                             fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, o=0,
+                             error="Please select a valid race distance")
+
+    is_valid, time_data, error_msg = InputValidator.validate_race_time_input(hours_str, minutes_str, seconds_str)
+
+    if not is_valid:
+        logger.warning(f"Invalid race time input: {error_msg}")
+        return render_template('mainpage.html',
+                             minutes=0, seconds=0, pace=0,
+                             fivek=0, tenk=0, twentyk=0,
+                             half=0, marathon=0, o=0,
+                             error=error_msg)
+
+    hours, minutes_race, seconds_race = time_data
+    pace_minutes, pace_seconds = PaceConverter.race_time_to_pace(race_distance, hours, minutes_race, seconds_race)
+    speed = PaceConverter.minutes_per_km_to_km_per_hour(pace_minutes, pace_seconds)
+    race_times = PaceConverter.calculate_race_times(pace_minutes, pace_seconds)
+
+    logger.info(f"Converted {race_distance} time {hours}:{minutes_race:02d}:{seconds_race:02d} to pace {pace_minutes}:{pace_seconds:02d}")
+
+    return render_template('mainpage.html',
+                         minutes=pace_minutes, seconds=pace_seconds, pace=f"{speed:.2f}",
+                         fivek=race_times['fivek'], tenk=race_times['tenk'],
+                         twentyk=race_times['twentyk'], half=race_times['half'],
+                         marathon=race_times['marathon'], o=race_times['custom'],
+                         race_distance=race_distance, race_hours=hours,
+                         race_minutes=minutes_race, race_seconds=seconds_race)
 
 @app.route('/js/<path:path>')
 def send_js(path):
