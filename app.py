@@ -98,8 +98,25 @@ class InputValidator:
     def validate_pace_input(minutes_str: str, seconds_str: str) -> Tuple[bool, Optional[Tuple[int, int]], str]:
         """Validate and convert pace input."""
         try:
-            minutes = int(minutes_str)
-            seconds = int(seconds_str)
+            # Sanitize input - strip whitespace and handle empty/None values
+            minutes_str = str(minutes_str or "0").strip()
+            seconds_str = str(seconds_str or "0").strip()
+
+            # Check for obviously invalid characters (injection prevention)
+            # Only allow digits, minus sign, and decimal point
+            if not all(c.isdigit() or c in '.-' for c in minutes_str):
+                return False, None, "Minutes must be a valid number"
+            if not all(c.isdigit() or c in '.-' for c in seconds_str):
+                return False, None, "Seconds must be a valid number"
+
+            # Additional safety: check for multiple dots or invalid patterns
+            if minutes_str.count('.') > 1 or minutes_str.count('-') > 1:
+                return False, None, "Minutes must be a valid number"
+            if seconds_str.count('.') > 1 or seconds_str.count('-') > 1:
+                return False, None, "Seconds must be a valid number"
+
+            minutes = int(float(minutes_str))  # Handle decimal inputs
+            seconds = int(float(seconds_str))
 
             if minutes < 0 or seconds < 0:
                 return False, None, "Minutes and seconds must be non-negative"
@@ -107,16 +124,30 @@ class InputValidator:
                 return False, None, "Seconds must be less than 60"
             if minutes > 120:
                 return False, None, "Minutes seems unreasonably high (>120)"
+            if minutes == 0 and seconds == 0:
+                return False, None, "Pace cannot be zero - please enter a valid pace"
 
             return True, (minutes, seconds), ""
 
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             return False, None, "Invalid input: please enter valid numbers"
 
     @staticmethod
     def validate_speed_input(speed_str: str) -> Tuple[bool, Optional[float], str]:
         """Validate and convert speed input."""
         try:
+            # Sanitize input - strip whitespace and handle empty/None values
+            speed_str = str(speed_str or "0").strip()
+
+            # Check for obviously invalid characters (injection prevention)
+            # Only allow digits, minus sign, and decimal point
+            if not all(c.isdigit() or c in '.-' for c in speed_str):
+                return False, None, "Speed must be a valid number"
+
+            # Additional safety: check for multiple dots or invalid patterns
+            if speed_str.count('.') > 1 or speed_str.count('-') > 1:
+                return False, None, "Speed must be a valid number"
+
             speed = float(speed_str)
 
             if speed <= 0:
@@ -126,16 +157,38 @@ class InputValidator:
 
             return True, speed, ""
 
-        except (ValueError, TypeError, InvalidOperation):
+        except (ValueError, TypeError, InvalidOperation, OverflowError):
             return False, None, "Invalid input: please enter a valid number"
 
     @staticmethod
     def validate_race_time_input(hours_str: str, minutes_str: str, seconds_str: str) -> Tuple[bool, Optional[Tuple[int, int, int]], str]:
         """Validate and convert race time input."""
         try:
-            hours = int(hours_str or "0")
-            minutes = int(minutes_str or "0")
-            seconds = int(seconds_str or "0")
+            # Sanitize input - strip whitespace and handle empty/None values
+            hours_str = str(hours_str or "0").strip()
+            minutes_str = str(minutes_str or "0").strip()
+            seconds_str = str(seconds_str or "0").strip()
+
+            # Check for obviously invalid characters (injection prevention)
+            # Only allow digits, minus sign, and decimal point
+            if not all(c.isdigit() or c in '.-' for c in hours_str):
+                return False, None, "Hours must be a valid number"
+            if not all(c.isdigit() or c in '.-' for c in minutes_str):
+                return False, None, "Minutes must be a valid number"
+            if not all(c.isdigit() or c in '.-' for c in seconds_str):
+                return False, None, "Seconds must be a valid number"
+
+            # Additional safety: check for multiple dots or invalid patterns
+            if hours_str.count('.') > 1 or hours_str.count('-') > 1:
+                return False, None, "Hours must be a valid number"
+            if minutes_str.count('.') > 1 or minutes_str.count('-') > 1:
+                return False, None, "Minutes must be a valid number"
+            if seconds_str.count('.') > 1 or seconds_str.count('-') > 1:
+                return False, None, "Seconds must be a valid number"
+
+            hours = int(float(hours_str))
+            minutes = int(float(minutes_str))
+            seconds = int(float(seconds_str))
 
             if hours < 0 or minutes < 0 or seconds < 0:
                 return False, None, "Time values must be non-negative"
@@ -148,7 +201,7 @@ class InputValidator:
 
             return True, (hours, minutes, seconds), ""
 
-        except (ValueError, TypeError):
+        except (ValueError, TypeError, OverflowError):
             return False, None, "Invalid input: please enter valid numbers"
 
 @app.route("/", methods=['GET', 'POST'])
@@ -179,7 +232,9 @@ def index():
             return render_template('mainpage.html',
                                  minutes=0, seconds=0, pace=0,
                                  fivek=0, tenk=0, twentyk=0,
-                                 half=0, marathon=0, o=0)
+                                 half=0, marathon=0, o=0,
+                                 race_distance='', race_hours=0,
+                                 race_minutes=0, race_seconds=0)
 
     except Exception as e:
         logger.error(f"Unexpected error in index route: {e}")
@@ -187,6 +242,8 @@ def index():
                              minutes=0, seconds=0, pace=0,
                              fivek=0, tenk=0, twentyk=0,
                              half=0, marathon=0, o=0,
+                             race_distance='', race_hours=0,
+                             race_minutes=0, race_seconds=0,
                              error="An unexpected error occurred")
 
 def _handle_pace_to_speed_conversion():
@@ -278,12 +335,16 @@ def _handle_race_time_conversion():
     minutes_str = request.form.get('race_minutes', '0')
     seconds_str = request.form.get('race_seconds', '0')
 
-    if race_distance not in RACE_DISTANCES:
+    # Sanitize and validate race distance (injection prevention)
+    race_distance = str(race_distance).strip()
+    if not race_distance or race_distance not in RACE_DISTANCES:
         logger.warning(f"Invalid race distance: {race_distance}")
         return render_template('mainpage.html',
                              minutes=0, seconds=0, pace=0,
                              fivek=0, tenk=0, twentyk=0,
                              half=0, marathon=0, o=0,
+                             race_distance='', race_hours=0,
+                             race_minutes=0, race_seconds=0,
                              error="Please select a valid race distance")
 
     is_valid, time_data, error_msg = InputValidator.validate_race_time_input(hours_str, minutes_str, seconds_str)
@@ -294,6 +355,8 @@ def _handle_race_time_conversion():
                              minutes=0, seconds=0, pace=0,
                              fivek=0, tenk=0, twentyk=0,
                              half=0, marathon=0, o=0,
+                             race_distance='', race_hours=0,
+                             race_minutes=0, race_seconds=0,
                              error=error_msg)
 
     hours, minutes_race, seconds_race = time_data
