@@ -210,13 +210,26 @@ def _handle_pace_to_speed_conversion():
 
     logger.info(f"Converted pace {minutes}:{seconds:02d} to speed {speed:.2f} km/h")
 
+    # Get the selected race distance from form or default to 5K
+    selected_distance = request.form.get('race_distance', 'fivek')
+
+    # Calculate what the race time would be for the selected distance
+    if selected_distance in RACE_DISTANCES:
+        distance_km = RACE_DISTANCES[selected_distance]
+        total_race_seconds = (minutes * 60 + seconds) * distance_km
+        race_hours = int(total_race_seconds // 3600)
+        race_mins = int((total_race_seconds % 3600) // 60)
+        race_secs = int(total_race_seconds % 60)
+    else:
+        race_hours = race_mins = race_secs = 0
+
     return render_template('mainpage.html',
                          minutes=minutes, seconds=seconds, pace=f"{speed:.2f}",
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
                          marathon=race_times['marathon'], o=race_times['custom'],
-                         race_distance='', race_hours=0,
-                         race_minutes=0, race_seconds=0)
+                         race_distance=selected_distance, race_hours=race_hours,
+                         race_minutes=race_mins, race_seconds=race_secs)
 
 def _handle_speed_to_pace_conversion():
     """Handle conversion from speed (km/h) to pace (min/km)."""
@@ -237,13 +250,26 @@ def _handle_speed_to_pace_conversion():
 
     logger.info(f"Converted speed {speed} km/h to pace {minutes}:{seconds:02d}")
 
+    # Get the selected race distance from form or default to 5K
+    selected_distance = request.form.get('race_distance', 'fivek')
+
+    # Calculate what the race time would be for the selected distance
+    if selected_distance in RACE_DISTANCES:
+        distance_km = RACE_DISTANCES[selected_distance]
+        total_race_seconds = (minutes * 60 + seconds) * distance_km
+        race_hours = int(total_race_seconds // 3600)
+        race_mins = int((total_race_seconds % 3600) // 60)
+        race_secs = int(total_race_seconds % 60)
+    else:
+        race_hours = race_mins = race_secs = 0
+
     return render_template('mainpage.html',
                          minutes=minutes, seconds=seconds, pace=speed_str,
                          fivek=race_times['fivek'], tenk=race_times['tenk'],
                          twentyk=race_times['twentyk'], half=race_times['half'],
                          marathon=race_times['marathon'], o=race_times['custom'],
-                         race_distance='', race_hours=0,
-                         race_minutes=0, race_seconds=0)
+                         race_distance=selected_distance, race_hours=race_hours,
+                         race_minutes=race_mins, race_seconds=race_secs)
 
 def _handle_race_time_conversion():
     """Handle conversion from race time to pace and other race times."""

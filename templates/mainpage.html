@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pace Converter Pro</title>
+    <title>Pace Converter</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
     <div class="container">
         <!-- Header -->
         <header class="header">
-            <h1>🏃‍♂️ Pace Converter Pro</h1>
+            <h1>🏃‍♂️ Pace Converter</h1>
             <p>Calculate your running pace and predict race times with precision</p>
         </header>
 
@@ -198,6 +198,15 @@
     </div>
 
     <script>
+        // Race distances in kilometers
+        const raceDistances = {
+            'fivek': 5.0,
+            'tenk': 10.0,
+            'twentyk': 20.0,
+            'half': 21.0975,
+            'marathon': 42.195
+        };
+
         // Add smooth form interactions
         document.addEventListener('DOMContentLoaded', function() {
             const inputs = document.querySelectorAll('input, select');
@@ -218,6 +227,54 @@
                     this.innerHTML = 'Calculating...';
                 });
             });
+
+            // Handle race distance change
+            const raceDistanceSelect = document.getElementById('race_distance');
+            const minutesInput = document.getElementById('minutes');
+            const secondsInput = document.getElementById('seconds');
+            const raceHoursInput = document.querySelector('input[name="race_hours"]');
+            const raceMinutesInput = document.querySelector('input[name="race_minutes"]');
+            const raceSecondsInput = document.querySelector('input[name="race_seconds"]');
+
+            function updateRaceTime() {
+                const selectedDistance = raceDistanceSelect.value;
+                const minutes = parseInt(minutesInput.value) || 0;
+                const seconds = parseInt(secondsInput.value) || 0;
+
+                // If pace is cleared or zero, clear race time fields
+                if ((minutesInput.value === '' && secondsInput.value === '') || (minutes === 0 && seconds === 0)) {
+                    raceHoursInput.value = '';
+                    raceMinutesInput.value = '';
+                    raceSecondsInput.value = '';
+                    return;
+                }
+
+                // Calculate if we have a valid pace
+                if (minutes > 0 || seconds > 0) {
+                    const distanceKm = raceDistances[selectedDistance];
+                    if (distanceKm) {
+                        const totalRaceSeconds = (minutes * 60 + seconds) * distanceKm;
+                        const hours = Math.floor(totalRaceSeconds / 3600);
+                        const mins = Math.floor((totalRaceSeconds % 3600) / 60);
+                        const secs = Math.floor(totalRaceSeconds % 60);
+
+                        raceHoursInput.value = hours > 0 ? hours : '';
+                        raceMinutesInput.value = mins > 0 ? mins : '';
+                        raceSecondsInput.value = secs > 0 ? secs : '';
+                    }
+                }
+            }
+
+            // Update race time when distance changes
+            if (raceDistanceSelect) {
+                raceDistanceSelect.addEventListener('change', updateRaceTime);
+            }
+
+            // Also update when pace changes
+            if (minutesInput && secondsInput) {
+                minutesInput.addEventListener('input', updateRaceTime);
+                secondsInput.addEventListener('input', updateRaceTime);
+            }
         });
     </script>
 </body>
